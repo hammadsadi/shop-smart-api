@@ -58,6 +58,15 @@ async function run() {
       res.send(result);
     });
 
+    // Get User Added Query
+    app.get("/user-query/:email", async (req, res) => {
+      const { email } = req.params;
+      console.log(email);
+      const query = { "user.email": email };
+      const result = await queriesCollection.find(query).toArray();
+      res.send(result);
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
