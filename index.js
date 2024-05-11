@@ -37,6 +37,13 @@ async function run() {
     // Collections
     const queriesCollection = client.db("queriesDB").collection("queries");
 
+    // Create Queries
+    app.post("/queries", async (req, res) => {
+      const queryData = req.body;
+      const result = await queriesCollection.insertOne(queryData);
+      res.send(result);
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
