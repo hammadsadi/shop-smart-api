@@ -44,6 +44,12 @@ async function run() {
       res.send(result);
     });
 
+    // Get All Queries
+    app.get("/queries", async (req, res) => {
+      const result = await queriesCollection.find().toArray();
+      res.send(result);
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
