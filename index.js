@@ -107,7 +107,6 @@ async function run() {
         { _id: new ObjectId(recommendatioData.queryId) },
         { $inc: { recommendationCount: 1 } }
       );
-      console.log(updateRecommentCount);
 
       const result = await recommendationCollection.insertOne(
         recommendatioData
@@ -118,6 +117,14 @@ async function run() {
     app.get("/recommendation/:id", async (req, res) => {
       const { id } = req.params;
       const filter = { queryId: id };
+      const result = await recommendationCollection.find(filter).toArray();
+      res.send(result);
+    });
+
+    // Get My Recommendation
+    app.get("/my-recommendation/:email", async (req, res) => {
+      const { email } = req.params;
+      const filter = { recommenderEmail: email };
       const result = await recommendationCollection.find(filter).toArray();
       res.send(result);
     });
