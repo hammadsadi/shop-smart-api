@@ -144,6 +144,15 @@ async function run() {
       res.send(result);
     });
 
+    // Get All User Recommendations
+    app.get("/get-all-users-recommendations/:email", async (req, res) => {
+      const { email } = req.params;
+      const result = await recommendationCollection
+        .find({ recommenderEmail: { $ne: email } })
+        .toArray();
+      res.send(result);
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
