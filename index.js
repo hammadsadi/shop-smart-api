@@ -61,9 +61,34 @@ async function run() {
     // Get User Added Query
     app.get("/user-query/:email", async (req, res) => {
       const { email } = req.params;
-      console.log(email);
+      const options = {
+        // Sort returned documents in ascending order by title (A->Z)
+        sort: { "user.date": -1 },
+      };
       const query = { "user.email": email };
-      const result = await queriesCollection.find(query).toArray();
+      const result = await queriesCollection.find(query, options).toArray();
+      res.send(result);
+    });
+
+    // Update Query
+    app.put("/update-query/:id", async (req, res) => {
+      const { id } = req.params;
+      const updateData = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          ...updateData,
+        },
+      };
+      const result = await queriesCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    // Delete Own Query
+    app.delete("/delete-query/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await queriesCollection.deleteOne(query);
       res.send(result);
     });
 
