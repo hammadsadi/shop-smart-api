@@ -30,7 +30,6 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
 
@@ -104,19 +103,29 @@ async function run() {
     app.post("/recommendation", async (req, res) => {
       const recommendatioData = req.body;
 
+      const updateRecommentCount = await queriesCollection.updateOne(
+        { _id: new ObjectId(recommendatioData.queryId) },
+        { $inc: { recommendationCount: 1 } }
+      );
+      console.log(updateRecommentCount);
+
       const result = await recommendationCollection.insertOne(
         recommendatioData
       );
       res.send(result);
     });
     // All Recommendation
+    app.get("/recommendation/:id", async (req, res) => {
+      const { id } = req.params;
+      const filter = { queryId: id };
+      const result = await recommendationCollection.find(filter).toArray();
+      res.send(result);
+    });
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
   }
 }
 run().catch(console.dir);
