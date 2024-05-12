@@ -129,6 +129,21 @@ async function run() {
       res.send(result);
     });
 
+    // Delete My Recommendation
+    app.delete("/delete-recommendation/:id", async (req, res) => {
+      const { id } = req.params;
+      const { queryId } = req.query;
+      const updateRecommentCount = await queriesCollection.updateOne(
+        { _id: new ObjectId(queryId) },
+        { $inc: { recommendationCount: -1 } }
+      );
+
+      const filter = { _id: new ObjectId(id) };
+      const result = await recommendationCollection.deleteOne(filter);
+
+      res.send(result);
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
