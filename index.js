@@ -36,6 +36,9 @@ async function run() {
 
     // Collections
     const queriesCollection = client.db("queriesDB").collection("queries");
+    const recommendationCollection = client
+      .db("queriesDB")
+      .collection("recommendations");
 
     // Create Queries
     app.post("/queries", async (req, res) => {
@@ -46,7 +49,12 @@ async function run() {
 
     // Get All Queries
     app.get("/queries", async (req, res) => {
-      const result = await queriesCollection.find().toArray();
+      const options = {
+        // Sort returned documents in ascending order by title (A->Z)
+        sort: { "user.date": -1 },
+      };
+      const query = {};
+      const result = await queriesCollection.find(query, options).toArray();
       res.send(result);
     });
 
@@ -91,6 +99,17 @@ async function run() {
       const result = await queriesCollection.deleteOne(query);
       res.send(result);
     });
+
+    // Create Recommendation
+    app.post("/recommendation", async (req, res) => {
+      const recommendatioData = req.body;
+
+      const result = await recommendationCollection.insertOne(
+        recommendatioData
+      );
+      res.send(result);
+    });
+    // All Recommendation
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
