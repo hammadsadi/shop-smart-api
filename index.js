@@ -58,6 +58,17 @@ async function run() {
         .send({ success: true });
     });
 
+    // Clear Token
+    app.get("/cookie-clear", (req, res) => {
+      res
+        .clearCookie("token", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+          maxAge: 0,
+        })
+        .send({ success: true });
+    });
     // Create Queries
     app.post("/queries", async (req, res) => {
       const queryData = req.body;
