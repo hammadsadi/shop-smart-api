@@ -18,6 +18,23 @@ app.use(
 );
 app.use(cookieParser());
 
+// Token Verify
+const tokenVerify = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).send("Unauthorized Access");
+  }
+  if (token) {
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decode) => {
+      if (err) {
+        return res.status(401).send("Unauthorized Access");
+      }
+      req.user = decode;
+      next();
+    });
+  }
+};
+
 // MongoDB
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@syedsadibd.a5hvdhf.mongodb.net/?retryWrites=true&w=majority&appName=syedsadibd`;
 
@@ -78,11 +95,15 @@ async function run() {
 
     // Get All Queries
     app.get("/queries", async (req, res) => {
+      const search = req.query.search;
+      const query = {
+        productName: { $regex: search, $options: "i" },
+      };
       const options = {
         // Sort returned documents in ascending order by title (A->Z)
         sort: { "user.date": -1 },
       };
-      const query = {};
+      // const query = {};
       const result = await queriesCollection.find(query, options).toArray();
       res.send(result);
     });
