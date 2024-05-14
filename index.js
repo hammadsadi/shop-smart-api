@@ -92,7 +92,7 @@ async function run() {
     });
 
     // Clear Token
-    app.get("/cookie-clear", (req, res) => {
+    app.post("/cookie-clear", (req, res) => {
       res
         .clearCookie("token", {
           httpOnly: true,
