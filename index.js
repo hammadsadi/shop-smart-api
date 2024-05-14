@@ -19,13 +19,29 @@ app.use(
 app.use(cookieParser());
 
 // Token Verify
+// const tokenVerify = (req, res, next) => {
+//   const token = req.cookies.token;
+//   if (!token) {
+//     return res.status(401).send("Unauthorized Access");
+//   }
+//   if (token) {
+//     jwt.verify(token, process.env.ACCESS_TOKEN, (err, decode) => {
+//       if (err) {
+//         return res.status(401).send("Unauthorized Access");
+//       }
+//       req.user = decode;
+//       next();
+//     });
+//   }
+// };
+
 const tokenVerify = (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
     return res.status(401).send("Unauthorized Access");
   }
   if (token) {
-    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decode) => {
+    jwt.verify(token, process.env.SCRET_KEY, (err, decode) => {
       if (err) {
         return res.status(401).send("Unauthorized Access");
       }
@@ -87,7 +103,7 @@ async function run() {
         .send({ success: true });
     });
     // Create Queries
-    app.post("/queries", async (req, res) => {
+    app.post("/queries", tokenVerify, async (req, res) => {
       const queryData = req.body;
       const result = await queriesCollection.insertOne(queryData);
       res.send(result);
@@ -96,9 +112,11 @@ async function run() {
     // Get All Queries
     app.get("/queries", async (req, res) => {
       const search = req.query.search;
-      const query = {
-        productName: { $regex: search, $options: "i" },
-      };
+      const query = search
+        ? {
+            productName: { $regex: search, $options: "i" },
+          }
+        : {};
       const options = {
         // Sort returned documents in ascending order by title (A->Z)
         sort: { "user.date": -1 },
@@ -109,7 +127,7 @@ async function run() {
     });
 
     // Get Single Queries
-    app.get("/queries/:id", async (req, res) => {
+    app.get("/queries/:id", tokenVerify, async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
       const result = await queriesCollection.findOne(query);
@@ -117,7 +135,7 @@ async function run() {
     });
 
     // Get User Added Query
-    app.get("/user-query/:email", async (req, res) => {
+    app.get("/user-query/:email", tokenVerify, async (req, res) => {
       const { email } = req.params;
       const options = {
         // Sort returned documents in ascending order by title (A->Z)
@@ -129,7 +147,7 @@ async function run() {
     });
 
     // Update Query
-    app.put("/update-query/:id", async (req, res) => {
+    app.put("/update-query/:id", tokenVerify, async (req, res) => {
       const { id } = req.params;
       const updateData = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -143,7 +161,7 @@ async function run() {
     });
 
     // Delete Own Query
-    app.delete("/delete-query/:id", async (req, res) => {
+    app.delete("/delete-query/:id", tokenVerify, async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
       const result = await queriesCollection.deleteOne(query);
@@ -151,7 +169,7 @@ async function run() {
     });
 
     // Create Recommendation
-    app.post("/recommendation", async (req, res) => {
+    app.post("/recommendation", tokenVerify, async (req, res) => {
       const recommendatioData = req.body;
 
       const updateRecommentCount = await queriesCollection.updateOne(
@@ -165,7 +183,7 @@ async function run() {
       res.send(result);
     });
     // All Recommendation
-    app.get("/recommendation/:id", async (req, res) => {
+    app.get("/recommendation/:id", tokenVerify, async (req, res) => {
       const { id } = req.params;
       const filter = { queryId: id };
       const result = await recommendationCollection.find(filter).toArray();
@@ -173,15 +191,16 @@ async function run() {
     });
 
     // Get My Recommendation
-    app.get("/my-recommendation/:email", async (req, res) => {
+    app.get("/my-recommendation/:email", tokenVerify, async (req, res) => {
       const { email } = req.params;
+
       const filter = { recommenderEmail: email };
       const result = await recommendationCollection.find(filter).toArray();
       res.send(result);
     });
 
     // Delete My Recommendation
-    app.delete("/delete-recommendation/:id", async (req, res) => {
+    app.delete("/delete-recommendation/:id", tokenVerify, async (req, res) => {
       const { id } = req.params;
       const { queryId } = req.query;
       const updateRecommentCount = await queriesCollection.updateOne(
@@ -196,11 +215,21 @@ async function run() {
     });
 
     // Get All User Recommendations
-    app.get("/get-all-users-recommendations/:email", async (req, res) => {
-      const { email } = req.params;
-      const result = await recommendationCollection
-        .find({ recommenderEmail: { $ne: email } })
-        .toArray();
+    app.get(
+      "/get-all-users-recommendations/:email",
+      tokenVerify,
+      async (req, res) => {
+        const { email } = req.params;
+        const result = await recommendationCollection
+          .find({ recommenderEmail: { $ne: email } })
+          .toArray();
+        res.send(result);
+      }
+    );
+
+    // Get All Trending Query
+    app.get("/trending-queries", async (req, res) => {
+      const result = await recommendationCollection.find().toArray();
       res.send(result);
     });
 
