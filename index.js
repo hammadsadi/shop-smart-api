@@ -18,23 +18,6 @@ app.use(
 );
 app.use(cookieParser());
 
-// Token Verify
-// const tokenVerify = (req, res, next) => {
-//   const token = req.cookies.token;
-//   if (!token) {
-//     return res.status(401).send("Unauthorized Access");
-//   }
-//   if (token) {
-//     jwt.verify(token, process.env.ACCESS_TOKEN, (err, decode) => {
-//       if (err) {
-//         return res.status(401).send("Unauthorized Access");
-//       }
-//       req.user = decode;
-//       next();
-//     });
-//   }
-// };
-
 const tokenVerify = (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
@@ -65,10 +48,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-
     // Collections
     const queriesCollection = client.db("queriesDB").collection("queries");
     const recommendationCollection = client
